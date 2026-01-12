@@ -26,11 +26,32 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse add(CategoryRequest request, org.springframework.web.multipart.MultipartFile file) {
         CategoryEntity newCategory = convertToEntity(request);
-        // handle file
+        // handle multipart file
         if (file != null && !file.isEmpty()) {
             String url = storageService.store(file);
             newCategory.setImgUrl(url);
         }
+        // handle base64 image embedded in JSON (data URI or raw base64)
+        if (request.getImgUrl() != null && !request.getImgUrl().isBlank()) {
+            String data = request.getImgUrl();
+            String contentType = null;
+            String base64Part = data;
+            if (data.startsWith("data:")) {
+                // format: data:image/png;base64,AAA...
+                int semi = data.indexOf(';');
+                int comma = data.indexOf(',');
+                if (semi > 0) contentType = data.substring(5, semi);
+                if (comma > 0) base64Part = data.substring(comma + 1);
+            }
+            try {
+                byte[] bytes = java.util.Base64.getDecoder().decode(base64Part);
+                String url = storageService.store(bytes, contentType != null ? contentType : "image/png");
+                newCategory.setImgUrl(url);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid base64 image data", e);
+            }
+        }
+
         categoreyRepository.save(newCategory);
         return convertToResponse(newCategory);
     }

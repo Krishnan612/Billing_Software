@@ -46,4 +46,28 @@ public class FileSystemStorageService implements StorageService {
             throw new RuntimeException("Failed to store file", e);
         }
     }
+
+    @Override
+    public String store(byte[] data, String contentType) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Invalid content type: only image content types are allowed");
+        }
+        String ext = ".bin";
+        if (contentType.contains("/")) {
+            ext = "." + contentType.substring(contentType.indexOf('/') + 1);
+            // clamp common exceptions
+            if (ext.equalsIgnoreCase(".jpeg")) ext = ".jpg";
+        }
+        String filename = UUID.randomUUID().toString() + ext;
+        Path target = root.resolve(filename);
+        try {
+            Files.write(target, data);
+            return "/uploads/" + filename;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store data", e);
+        }
+    }
 }
