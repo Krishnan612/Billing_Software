@@ -1,6 +1,6 @@
 package krishnan.billingsoftware.service.imp;
 
-import krishnan.billingsoftware.Repository.CategoreyRepository;
+import krishnan.billingsoftware.Repository.CategoryRepository;
 import krishnan.billingsoftware.entity.CategoryEntity;
 import krishnan.billingsoftware.io.CategoryRequest;
 import krishnan.billingsoftware.io.CategoryResponse;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
-    private final CategoreyRepository categoreyRepository;
+    private final CategoryRepository categoryRepository;
     private final krishnan.billingsoftware.service.storage.StorageService storageService;
 
     @Override
@@ -52,13 +52,13 @@ public class CategoryServiceImpl implements CategoryService {
             }
         }
 
-        categoreyRepository.save(newCategory);
+        categoryRepository.save(newCategory);
         return convertToResponse(newCategory);
     }
 
     @Override
     public List<CategoryResponse> read() {
-       return categoreyRepository.findAll()
+       return categoryRepository.findAll()
                 .stream()
                 .map(categoryEntity -> convertToResponse(categoryEntity))
                 .collect(Collectors.toList());
@@ -66,9 +66,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(String categoryId) {
-      CategoryEntity existingCategory =  categoreyRepository.findByCategoryId(categoryId)
+      CategoryEntity existingCategory =  categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not Found"+categoryId));
-      categoreyRepository.delete(existingCategory);
+      categoryRepository.delete(existingCategory);
     }
 
     private CategoryResponse convertToResponse(CategoryEntity newCategory) {
