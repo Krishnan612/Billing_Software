@@ -11,13 +11,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class CategoryController {
     private final CategoryService categoryService;
-
-    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/admin/categories")
+//    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponse addCategorey(@RequestPart(value = "category", required = false) String categoryJson,
                                         @RequestParam(value = "name", required = false) String name,
@@ -26,7 +24,6 @@ public class CategoryController {
                                         @org.springframework.web.bind.annotation.RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
                                         @org.springframework.web.bind.annotation.RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file){
         CategoryRequest request = null;
-        // If category JSON part is provided, parse it
         if (categoryJson != null && !categoryJson.isBlank()){
             try{
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -74,7 +71,7 @@ public class CategoryController {
         return categoryService.read();
     }
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{categoryId}")
+    @DeleteMapping("/admin/categories/{categoryId}")
     public void remove(@PathVariable String categoryId){
         try{
             categoryService.delete(categoryId);
