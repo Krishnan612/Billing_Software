@@ -1,83 +1,64 @@
 package krishnan.billingsoftware.controller;
-
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import krishnan.billingsoftware.io.CategoryRequest;
 import krishnan.billingsoftware.io.CategoryResponse;
 import krishnan.billingsoftware.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
+@RequestMapping("/categories")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class CategoryController {
+
     private final CategoryService categoryService;
-    @PostMapping("/admin/categories")
-//    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse addCategorey(@RequestPart(value = "category", required = false) String categoryJson,
-                                        @RequestParam(value = "name", required = false) String name,
-                                        @RequestParam(value = "description", required = false) String description,
-                                        @RequestParam(value = "bgcolor", required = false) String bgcolor,
-                                        @org.springframework.web.bind.annotation.RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
-                                        @org.springframework.web.bind.annotation.RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file){
+    public CategoryResponse addCategory(@RequestPart("category") String categoryString ,
+                                        @RequestPart("file") MultipartFile file) {
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
         CategoryRequest request = null;
-        if (categoryJson != null && !categoryJson.isBlank()){
-            try{
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                request = mapper.readValue(categoryJson, CategoryRequest.class);
-            }catch (com.fasterxml.jackson.core.JsonProcessingException e){
-                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category JSON", e);
-            }
-        } else {
-            // Build from individual fields
-            if (name == null || name.isBlank()){
-                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required field 'name'");
-            }
-            request = CategoryRequest.builder()
-                    .name(name)
-                    .description(description)
-                    .bgcolor(bgcolor)
-                    .build();
+        try{
+            request = objectMapper.readValue(categoryString, CategoryRequest.class);
+            return categoryService.add(request , file);
+        }catch(JsonProcessingException ex){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Exception occured while parsing the json :"+ex.getMessage());
         }
 
-        // prefer image param; fall back to file param
-        org.springframework.web.multipart.MultipartFile chosenFile = (image != null && !image.isEmpty()) ? image : file;
-        return categoryService.add(request, chosenFile);
     }
 
-    @PostMapping(consumes = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse addCategoreyJson(@RequestBody CategoryRequest request){
-        return categoryService.add(request);
-    }
 
-    @PostMapping(path = "/form-json", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse addCategoreyFormJson(@RequestPart("category") String categoryJson,
-                                                 @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file){
-        try {
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            CategoryRequest request = mapper.readValue(categoryJson, CategoryRequest.class);
-            return categoryService.add(request, file);
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e){
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category JSON", e);
-        }
-    }
     @GetMapping
     public List<CategoryResponse> fetchCategories(){
         return categoryService.read();
     }
+
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/admin/categories/{categoryId}")
+    @DeleteMapping("/{categoryId}")
     public void remove(@PathVariable String categoryId){
         try{
             categoryService.delete(categoryId);
-        }catch (Exception e){
+        }catch(Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,e.getMessage());
         }
-    }
 
+    }
 }
