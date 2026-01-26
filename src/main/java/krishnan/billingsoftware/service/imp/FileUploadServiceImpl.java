@@ -57,8 +57,8 @@ public class FileUploadServiceImpl implements FileUploadService{
     }
 
     @Override
-    public boolean deleteFile(String imgurl) {
-        String filename = imgurl.substring(imgurl.lastIndexOf("/")+1);
+    public boolean deleteFile(String imgUrl) {
+        String filename = imgUrl.substring(imgUrl.lastIndexOf("/")+1);
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filename)

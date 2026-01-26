@@ -2,6 +2,8 @@ package krishnan.billingsoftware.service.imp;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import krishnan.billingsoftware.Repository.ItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +20,12 @@ import lombok.RequiredArgsConstructor;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final FileUploadService fileUploadService;
+    private final ItemRepository itemRepository;
+
+    @Override
+    public CategoryResponse add(CategoryRequest request) {
+        return null;
+    }
 
     @Override
     public CategoryResponse add(CategoryRequest request, MultipartFile file) {
@@ -28,6 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
         return convertToResponse(newCategory);
     }
     private CategoryResponse convertToResponse(CategoryEntity newCategory) {
+        Integer itemsCount = itemRepository.countByCategoryId(newCategory.getId());
         return CategoryResponse.builder()
                 .categoryId(newCategory.getCategoryId())
                 .name(newCategory.getName())
@@ -36,6 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .imgUrl(newCategory.getImgUrl())
                 .createdAt(newCategory.getCreatedAt())
                 .updatedAt(newCategory.getUpdatedAt())
+                .items(itemsCount)
                 .build();
     }
     private CategoryEntity convertToEntity(CategoryRequest request) {
@@ -43,7 +53,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .categoryId(UUID.randomUUID().toString())
                 .name(request.getName())
                 .description(request.getDescription())
-                .bgColor(request.getBgcolor())
+                .bgcolor(request.getBgcolor())
                 .build();
     }
     @Override
@@ -57,9 +67,6 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String categoryId) {
         CategoryEntity existingCategory  = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category Not Found: " + categoryId));
-        fileUploadService.deleteFile(existingCategory.getImgUrl());
-        categoryRepository.delete(existingCategory);//recent add
-
         fileUploadService.deleteFile(existingCategory.getImgUrl());
         categoryRepository.delete(existingCategory);
     }

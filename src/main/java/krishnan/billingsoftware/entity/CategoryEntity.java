@@ -10,7 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "tbl.category")
+@Table(name = "tbl_category")
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,5 +31,4 @@ public class CategoryEntity {
     private Timestamp createdAt;
     @UpdateTimestamp
     private Timestamp updatedAt;
-
 }

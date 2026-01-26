@@ -13,7 +13,8 @@ import java.math.BigDecimal;
 @Builder
 public class ItemRequest {
     private String name;
+    private String description;
     private BigDecimal price;
     private String categoryId;
-    private String description;
+
 }
