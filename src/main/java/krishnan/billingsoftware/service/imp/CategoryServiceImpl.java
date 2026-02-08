@@ -14,6 +14,8 @@ import krishnan.billingsoftware.Repository.CategoryRepository;
 import krishnan.billingsoftware.service.CategoryService;
 import krishnan.billingsoftware.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 
@@ -67,6 +69,10 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String categoryId) {
         CategoryEntity existingCategory  = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category Not Found: " + categoryId));
+        Integer itemsCount = itemRepository.countByCategoryId(existingCategory.getId());
+        if (itemsCount != null && itemsCount > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category has items and cannot be deleted");
+        }
         fileUploadService.deleteFile(existingCategory.getImgUrl());
         categoryRepository.delete(existingCategory);
     }

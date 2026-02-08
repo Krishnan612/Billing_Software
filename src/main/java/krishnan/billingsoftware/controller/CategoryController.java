@@ -52,6 +52,8 @@ public class CategoryController {
     public void remove(@PathVariable String categoryId){
         try{
             categoryService.delete(categoryId);
+        }catch(ResponseStatusException e){
+            throw e;
         }catch(Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,e.getMessage());
         }
