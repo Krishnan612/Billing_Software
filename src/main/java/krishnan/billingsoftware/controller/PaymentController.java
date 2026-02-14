@@ -1,7 +1,9 @@
 package krishnan.billingsoftware.controller;
 
 import com.razorpay.RazorpayException;
+import krishnan.billingsoftware.io.OrderResponse;
 import krishnan.billingsoftware.io.PaymentRequest;
+import krishnan.billingsoftware.io.PaymentVerificationRequest;
 import krishnan.billingsoftware.io.RazorpayOrderResponse;
 import krishnan.billingsoftware.service.OrderService;
 import krishnan.billingsoftware.service.RazorpayService;
@@ -20,5 +22,10 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public RazorpayOrderResponse createRazorpayOrder(@RequestBody PaymentRequest request) throws RazorpayException {
         return razorpayService.createOrder(request.getAmount(), request.getCurrency());
+    }
+
+    @PostMapping("/verify")
+    public OrderResponse verifyPayment(@RequestBody PaymentVerificationRequest request){
+        return orderService.verifyPayment(request);
     }
 }
